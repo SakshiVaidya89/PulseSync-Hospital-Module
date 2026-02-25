@@ -47,7 +47,7 @@ export default function AppointmentManagement({ onNavigate }: AppointmentManagem
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
-  const { addNotification } = useNotification()
+  const { addNotification, fetchAppointmentNotifications } = useNotification()
 
   useEffect(() => {
     setIsVisible(true)
@@ -220,6 +220,8 @@ export default function AppointmentManagement({ onNavigate }: AppointmentManagem
       }
 
       fetchAppointments()
+      // Refresh notifications to show new patient confirmation/cancellation notifications
+      await fetchAppointmentNotifications()
     } catch (err) {
       console.error("[v0] Error updating appointment:", err)
       setError(err instanceof Error ? err.message : "Failed to update appointment")

@@ -141,10 +141,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchAppointmentNotifications()
-
-    // Poll for new notifications every 3 seconds
-    const interval = setInterval(fetchAppointmentNotifications, 3000)
-    return () => clearInterval(interval)
   }, [])
 
   const unreadCount = notifications.filter((n) => !n.read).length

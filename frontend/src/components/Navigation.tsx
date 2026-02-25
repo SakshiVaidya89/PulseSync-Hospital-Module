@@ -12,11 +12,11 @@ export default function Navigation({ currentPage, onNavigate }: NavigationProps)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
+    { id: "dashboard", label: "Dashboard" },
     // { id: "doctors", label: "Doctors", icon: "👨‍⚕️" },
-    { id: "patients", label: "Patients", icon: "👥" },
-    { id: "appointments", label: "Appointments", icon: "📅" },
-    { id: "diagnostics", label: "Diagnostics", icon: "🔬" },
+    { id: "patients", label: "Patients" },
+    { id: "appointments", label: "Appointments" },
+    { id: "diagnostics", label: "Diagnostics" },
   ]
 
   return (
@@ -51,7 +51,7 @@ export default function Navigation({ currentPage, onNavigate }: NavigationProps)
                       : "text-slate-700 hover:bg-sky-50 hover:text-sky-600"
                   }`}
                 >
-                  <span className="text-lg">{item.icon}</span>
+                  {/* <span className="text-lg">{item.icon}</span> */}
                   <span>{item.label}</span>
                 </button>
               </li>
@@ -110,7 +110,7 @@ export default function Navigation({ currentPage, onNavigate }: NavigationProps)
                       : "text-slate-700 hover:bg-sky-50 hover:text-sky-600"
                   }`}
                 >
-                  <span className="text-xl">{item.icon}</span>
+                  {/* <span className="text-xl">{item.icon}</span> */}
                   <span>{item.label}</span>
                 </button>
               </li>

@@ -404,7 +404,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                 <div>
                   <p className="font-semibold text-slate-900">Patient: {apt.patient_id}</p>
                   <p className="text-sm text-slate-600">
-                    {apt.doctor_id} • {apt.appointment_time}
+                    {apt.appointment_date} • {apt.appointment_time}
                   </p>
                 </div>
                 <span
