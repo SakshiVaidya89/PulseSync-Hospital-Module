@@ -38,6 +38,14 @@ export default function AvailabilitySlots({ onNavigate }: AvailabilitySlotsProps
 
   useEffect(() => {
     setIsVisible(true)
+    const userId = localStorage.getItem("user_id")
+    // Auto-fill doctor_id with the logged-in user's ID
+    if (userId) {
+      setFormData((prev) => ({
+        ...prev,
+        doctor_id: userId,
+      }))
+    }
     fetchAvailabilities()
   }, [])
 
@@ -83,6 +91,14 @@ export default function AvailabilitySlots({ onNavigate }: AvailabilitySlotsProps
     e.preventDefault()
     try {
       const token = localStorage.getItem("auth_token")
+      const userId = localStorage.getItem("user_id")
+      
+      const finalDoctorId = formData.doctor_id || userId
+      
+      if (!finalDoctorId) {
+        setError("Doctor ID is required. Please ensure you are logged in properly.")
+        return
+      }
 
       const response = await fetch(`${API_BASE_URL}/availability/create`, {
         method: "POST",
@@ -90,7 +106,10 @@ export default function AvailabilitySlots({ onNavigate }: AvailabilitySlotsProps
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          doctor_id: finalDoctorId,
+        }),
       })
 
       if (!response.ok) {

@@ -15,6 +15,13 @@ interface PatientData {
   blood_type: string
 }
 
+interface DoctorData {
+  id: string
+  name: string
+  specialty: string
+  email: string
+}
+
 interface Appointment {
   id: string
   patient_id: string
@@ -25,6 +32,7 @@ interface Appointment {
   notes: string
   status: "pending" | "confirmed" | "completed" | "cancelled"
   patient_data?: PatientData
+  doctor_data?: DoctorData
 }
 
 const API_BASE_URL = "http://localhost:5000/api"
@@ -76,12 +84,47 @@ export default function AppointmentManagement({ onNavigate }: AppointmentManagem
     }
   }
 
+  const fetchDoctorData = async (doctorId: string): Promise<DoctorData | null> => {
+    try {
+      const token = localStorage.getItem("auth_token")
+      const response = await fetch(`${API_BASE_URL}/auth/doctor/${doctorId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        console.log("[v0] Failed to fetch doctor data")
+        return null
+      }
+
+      const data = await response.json()
+      return {
+        id: data.id,
+        name: data.full_name || "Unknown Doctor",
+        specialty: data.department || "General Practice",
+        email: data.email || "N/A",
+      }
+    } catch (err) {
+      console.error("[v0] Error fetching doctor data:", err)
+      return null
+    }
+  }
+
   const fetchAppointments = async () => {
     try {
       setIsLoading(true)
       setError(null)
 
-      const token = localStorage.getItem("auth_token")
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("token")
+
+      if (!token) {
+        setError("Authentication token not found. Please login again.")
+        setIsLoading(false)
+        return
+      }
 
       const response = await fetch(`${API_BASE_URL}/appointments/hospital/appointments`, {
         method: "GET",
@@ -98,17 +141,19 @@ export default function AppointmentManagement({ onNavigate }: AppointmentManagem
       const data = await response.json()
       const allAppointments = [...data.today, ...data.upcoming, ...data.past]
 
-      const appointmentsWithPatientData = await Promise.all(
+      const appointmentsWithData = await Promise.all(
         allAppointments.map(async (apt) => {
           const patientData = await fetchPatientData(apt.patient_id)
+          const doctorData = await fetchDoctorData(apt.doctor_id)
           return {
             ...apt,
             patient_data: patientData,
+            doctor_data: doctorData,
           }
         }),
       )
 
-      setAppointments(appointmentsWithPatientData)
+      setAppointments(appointmentsWithData)
       setTodayAppointments(data.today || [])
 
       if (data.today && data.today.length > 0) {
@@ -134,13 +179,27 @@ export default function AppointmentManagement({ onNavigate }: AppointmentManagem
     try {
       const token = localStorage.getItem("auth_token")
 
-      const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/status`, {
-        method: "PUT",
+      let endpoint = `${API_BASE_URL}/appointments/${appointmentId}`
+      let method = "POST"
+      let body: any = {}
+
+      if (status === "confirmed") {
+        endpoint += "/confirm"
+        body = {}
+      } else if (status === "cancelled") {
+        endpoint += "/cancel"
+        const reason = prompt("Please provide a reason for cancellation:")
+        if (!reason) return
+        body = { reason }
+      }
+
+      const response = await fetch(endpoint, {
+        method: method,
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(body),
       })
 
       if (!response.ok) {
@@ -155,7 +214,7 @@ export default function AppointmentManagement({ onNavigate }: AppointmentManagem
         addNotification({
           title: `Appointment ${status}`,
           message: `Patient ${apt.patient_data?.name || apt.patient_id}'s appointment on ${apt.appointment_date} at ${apt.appointment_time} is now ${status}`,
-          type: status === "confirmed" ? "success" : "info",
+          type: status === "confirmed" ? "success" : "warning",
           appointmentId: appointmentId,
         })
       }
@@ -273,7 +332,7 @@ export default function AppointmentManagement({ onNavigate }: AppointmentManagem
                     </div>
                     <div className="text-sm">
                       <p className="text-xs text-slate-500 font-semibold">Doctor</p>
-                      <p className="text-slate-700 font-medium">{apt.doctor_id}</p>
+                      <p className="text-slate-700 font-medium">{apt.doctor_data?.name || apt.doctor_id}</p>
                     </div>
                   </div>
 
@@ -389,7 +448,11 @@ export default function AppointmentManagement({ onNavigate }: AppointmentManagem
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-slate-600 uppercase">Doctor</p>
-                    <p className="text-lg font-semibold text-slate-900">{selectedAppointment.doctor_id}</p>
+                    <p className="text-lg font-semibold text-slate-900">{selectedAppointment.doctor_data?.name || selectedAppointment.doctor_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-600 uppercase">Specialty</p>
+                    <p className="text-lg font-semibold text-slate-900">{selectedAppointment.doctor_data?.specialty || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-slate-600 uppercase">Status</p>

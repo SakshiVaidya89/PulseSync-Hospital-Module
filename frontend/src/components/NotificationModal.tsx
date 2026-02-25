@@ -1,5 +1,6 @@
 "use client"
 import { useNotification } from "../context/NotificationContext"
+import { useNavigate } from "react-router-dom"
 
 interface NotificationModalProps {
   isOpen: boolean
@@ -7,7 +8,8 @@ interface NotificationModalProps {
 }
 
 export function NotificationModal({ isOpen, onClose }: NotificationModalProps) {
-  const { notifications, markAsRead, markAllAsRead, clearNotifications } = useNotification()
+  const { notifications, markAsRead, markAllAsRead, clearNotification, clearNotifications } = useNotification()
+ const navigate = useNavigate()
 
   if (!isOpen) return null
 
@@ -56,10 +58,17 @@ export function NotificationModal({ isOpen, onClose }: NotificationModalProps) {
                 return (
                   <div
                     key={notification.id}
-                    onClick={() => markAsRead(notification.id)}
-                    className={`p-4 cursor-pointer transition-all hover:bg-sky-50 ${!notification.read ? "bg-sky-50/50" : ""}`}
+                    onClick={() => {
+                      markAsRead(notification.id)
+                      // Navigate to appointments page
+                      if (notification.appointmentId) {
+                        navigate('/appointments')
+                        onClose()
+                      }
+                    }}
+                    className={`p-4 cursor-pointer transition-all hover:bg-sky-50 flex items-start justify-between gap-3 ${!notification.read ? "bg-sky-50/50" : ""}`}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 flex-1">
                       <span className="text-xl mt-1">{icon}</span>
                       <div className="flex-1">
                         <h3 className="font-semibold text-slate-900 text-sm">{notification.title}</h3>
@@ -70,6 +79,16 @@ export function NotificationModal({ isOpen, onClose }: NotificationModalProps) {
                       </div>
                       {!notification.read && <div className="w-2 h-2 bg-sky-500 rounded-full mt-2 flex-shrink-0" />}
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        clearNotification(notification.id)
+                      }}
+                      className="text-slate-400 hover:text-red-600 text-xl font-bold transition-colors flex-shrink-0"
+                      title="Clear notification"
+                    >
+                      ×
+                    </button>
                   </div>
                 )
               })}

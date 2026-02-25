@@ -57,7 +57,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("token")
       if (!token) {
         setIsLoading(false)
         return
@@ -348,7 +348,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         <div
           className={`transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
         >
-          <StatCard title="Appointments" value="312" icon="📅" color="blue" trend="85 today" />
+          <StatCard title="Appointments" value="312" icon="��" color="blue" trend="85 today" />
         </div>
         <div
           className={`transition-all duration-700 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
